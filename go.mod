@@ -1,4 +1,4 @@
-module nsqparse
+module github.com/bryanaustin/nsqparse
 
 go 1.17
 
