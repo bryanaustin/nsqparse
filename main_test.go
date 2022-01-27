@@ -8,10 +8,10 @@ func TestParsing(t *testing.T) {
 	t.Parallel()
 	if d, err := Parse("tcp://nsq.server:1234/coolthings/mine"); !checkerror(t, err) {
 		compare(t, &Details{
-			Scheme:"tcp",
-			Address:"nsq.server:1234",
-			Topic:"coolthings",
-			Channel:"mine",
+			Scheme:  "tcp",
+			Address: "nsq.server:1234",
+			Topic:   "coolthings",
+			Channel: "mine",
 		}, d)
 	}
 }
@@ -20,10 +20,10 @@ func TestParsingSansChannel(t *testing.T) {
 	t.Parallel()
 	if d, err := Parse("nsqd://server:555/stuff"); !checkerror(t, err) {
 		compare(t, &Details{
-			Scheme:"nsqd",
-			Address:"server:555",
-			Topic:"stuff",
-			Channel:"",
+			Scheme:  "nsqd",
+			Address: "server:555",
+			Topic:   "stuff",
+			Channel: "",
 		}, d)
 	}
 }
@@ -32,10 +32,10 @@ func TestParsingDefaults(t *testing.T) {
 	t.Parallel()
 	if d, err := Parse("/solo"); !checkerror(t, err) {
 		compare(t, &Details{
-			Scheme:DefaultScheme,
-			Address:DefaultAddress,
-			Topic:"solo",
-			Channel:"",
+			Scheme:  DefaultScheme,
+			Address: DefaultAddress,
+			Topic:   "solo",
+			Channel: "",
 		}, d)
 	}
 }

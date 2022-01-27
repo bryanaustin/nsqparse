@@ -6,27 +6,27 @@ package nsqparse
 import (
 	"errors"
 	"fmt"
+	"github.com/nsqio/go-nsq"
+	"math/rand"
 	"net/url"
 	"strings"
-	"math/rand"
 	"time"
-	"github.com/nsqio/go-nsq"
 )
 
 const (
-	DefaultScheme = "tcp"
+	DefaultScheme  = "tcp"
 	DefaultAddress = "localhost:4150"
 )
 
 var (
 	NoTopic = errors.New("no topic")
-	chars = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
+	chars   = []rune("abcdefghijklmnopqrstuvwxyz0123456789")
 )
 
 type Details struct {
-	Scheme string
+	Scheme  string
 	Address string
-	Topic string
+	Topic   string
 	Channel string
 }
 
