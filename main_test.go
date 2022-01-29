@@ -40,6 +40,54 @@ func TestParsingDefaults(t *testing.T) {
 	}
 }
 
+func TestParsingSchemeless(t *testing.T) {
+	t.Parallel()
+	if d, err := Parse("server/woot"); !checkerror(t, err) {
+		compare(t, &Details{
+			Scheme:  DefaultScheme,
+			Address: "server:4150",
+			Topic:   "woot",
+			Channel: "",
+		}, d)
+	}
+}
+
+func TestParsingSchemelessPort(t *testing.T) {
+	t.Parallel()
+	if d, err := Parse("server:999/woot"); !checkerror(t, err) {
+		compare(t, &Details{
+			Scheme:  DefaultScheme,
+			Address: "server:999",
+			Topic:   "woot",
+			Channel: "",
+		}, d)
+	}
+}
+
+func TestParsingV4Address(t *testing.T) {
+	t.Parallel()
+	if d, err := Parse("10.9.8.7/ip"); !checkerror(t, err) {
+		compare(t, &Details{
+			Scheme:  DefaultScheme,
+			Address: "10.9.8.7:4150",
+			Topic:   "ip",
+			Channel: "",
+		}, d)
+	}
+}
+
+func TestParsingV6Address(t *testing.T) {
+	t.Parallel()
+	if d, err := Parse("nsqd://[fd00::12a5]/v6"); !checkerror(t, err) {
+		compare(t, &Details{
+			Scheme:  "nsqd",
+			Address: "[fd00::12a5]:4150",
+			Topic:   "v6",
+			Channel: "",
+		}, d)
+	}
+}
+
 func checkerror(t *testing.T, err error) bool {
 	t.Helper()
 	if err != nil {

@@ -9,6 +9,7 @@ import (
 	"github.com/nsqio/go-nsq"
 	"math/rand"
 	"net/url"
+	"net"
 	"strings"
 	"time"
 )
@@ -16,6 +17,8 @@ import (
 const (
 	DefaultScheme  = "tcp"
 	DefaultAddress = "localhost:4150"
+	DefaultPort = ":4150"
+	MagicErrorWordsOfPortMissing = "missing port in address"
 )
 
 var (
@@ -47,6 +50,11 @@ func Parse(addr string) (d *Details, err error) {
 
 	if len(d.Address) < 1 {
 		d.Address = DefaultAddress
+	} else {
+		_, _, err := net.SplitHostPort(d.Address)
+		if err != nil && strings.Contains(err.Error(), MagicErrorWordsOfPortMissing) {
+			d.Address = d.Address + DefaultPort
+		}
 	}
 
 	return
@@ -75,12 +83,43 @@ func ParseNoDefaults(addr string) (d *Details, err error) {
 		return
 	}
 
-	d.Scheme = u.Scheme
-	d.Address = u.Host
-	tp := strings.Trim(u.Path, "/")
-	ps := strings.Split(tp, "/")
 
-	if len(ps) > 0 {
+	if len(u.Host) < 1 {
+		// Host not parsed
+		if len(u.Opaque) > 0 {
+			// Uses opaque syntax
+			tp := strings.TrimRight(u.Opaque, "/")
+			ps := strings.Split(tp, "/")
+
+			d.Address = u.Scheme + ":" + ps[0]
+			d.Scheme = ""
+
+			if len(ps) > 1 {
+				d.Topic = ps[1]
+				if len(ps) > 2 {
+					d.Channel = ps[2]
+				}
+			}
+		} else {
+			// Probably means the first part of the path is the host
+			d.Scheme = u.Scheme
+			tp := strings.TrimRight(u.Path, "/")
+			ps := strings.Split(tp, "/")
+
+			d.Address = ps[0]
+			if len(ps) > 1 {
+				d.Topic = ps[1]
+				if len(ps) > 2 {
+					d.Channel = ps[2]
+				}
+			}
+		}
+	} else {
+		d.Scheme = u.Scheme
+		d.Address = u.Host
+		tp := strings.Trim(u.Path, "/")
+		ps := strings.Split(tp, "/")
+
 		d.Topic = ps[0]
 		if len(ps) > 1 {
 			d.Channel = ps[1]
@@ -107,7 +146,7 @@ func (d *Details) Consumer(c *nsq.Config) (*nsq.Consumer, error) {
 	return nsq.NewConsumer(d.Topic, channel, c)
 }
 
-//TODO: Support for multipe addresses
+//TODO: Support for multiple addresses
 
 // ConnectConsumer will connect this consumer using provided details
 func (d *Details) ConnectConsumer(c *nsq.Consumer) error {
